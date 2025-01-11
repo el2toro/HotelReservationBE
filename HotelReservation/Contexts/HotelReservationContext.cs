@@ -16,8 +16,30 @@ namespace HotelReservation.Contexts
             optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DbConnection"));
         }
 
-        public DbSet<Hotel> Hotels { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<Destination> Destinations { get; set; }
+        public DbSet<Hotel> Hotels { get; set; }
+        public DbSet<Location> Locations { get; set; }
+        public DbSet<Amenity> Amenities { get; set; }
+        public DbSet<HotelAmenity> HotelAmenities { get; set; }
+        public DbSet<Room> Rooms { get; set; }
+        public DbSet<Guest> Guests { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<HotelAmenity>()
+                .HasKey(ha => new { ha.HotelId, ha.AmenityId });
+
+            modelBuilder.Entity<HotelAmenity>()
+                .HasOne(ha => ha.Hotel)
+                .WithMany(ha => ha.HotelAmenities)
+                .HasForeignKey(ha => ha.HotelId);
+
+            modelBuilder.Entity<HotelAmenity>()
+                .HasOne(ha => ha.Amenity)
+                .WithMany(ha => ha.HotelAmenities)
+                .HasForeignKey(ha => ha.AmenityId);
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using HotelReservation.DTOs;
-using HotelReservation.Models;
+﻿using HotelReservation.Models;
 using HotelReservation.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -58,14 +57,6 @@ namespace HotelReservation.Controllers
         {
             //await _repository.CreateAsync(hotel);
             return Ok(HttpStatusCode.Accepted);
-        }
-
-        //TODO: 
-        [HttpPost("GetDestinations")]
-        public async Task<ActionResult> GetDestinationsAsync(HotelSearchDto hotelSearchDto)
-        {
-            var destinations = await _repository.GetDestinationsAsync(hotelSearchDto.WhereToGo);
-            return Ok(destinations);
         }
     }
 }
