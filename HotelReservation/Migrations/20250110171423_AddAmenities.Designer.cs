@@ -4,6 +4,7 @@ using HotelReservation.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelReservation.Migrations
 {
     [DbContext(typeof(HotelReservationContext))]
-    partial class HotelReservationContextModelSnapshot : ModelSnapshot
+    [Migration("20250110171423_AddAmenities")]
+    partial class AddAmenities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,11 +27,11 @@ namespace HotelReservation.Migrations
 
             modelBuilder.Entity("HotelReservation.Models.Amenities", b =>
                 {
-                    b.Property<int>("AmenitiesId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AmenitiesId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("HasBbq")
                         .HasColumnType("bit");
@@ -90,7 +93,7 @@ namespace HotelReservation.Migrations
                     b.Property<bool>("PetsAllowed")
                         .HasColumnType("bit");
 
-                    b.HasKey("AmenitiesId");
+                    b.HasKey("Id");
 
                     b.ToTable("Amenities");
                 });
@@ -118,11 +121,11 @@ namespace HotelReservation.Migrations
 
             modelBuilder.Entity("HotelReservation.Models.Hotel", b =>
                 {
-                    b.Property<int>("HotelId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HotelId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AmenitiesId")
                         .HasColumnType("int");
@@ -153,7 +156,7 @@ namespace HotelReservation.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("HotelId");
+                    b.HasKey("Id");
 
                     b.HasIndex("AmenitiesId");
 
@@ -164,11 +167,11 @@ namespace HotelReservation.Migrations
 
             modelBuilder.Entity("HotelReservation.Models.Location", b =>
                 {
-                    b.Property<int>("LocationId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LocationId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -186,7 +189,7 @@ namespace HotelReservation.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("LocationId");
+                    b.HasKey("Id");
 
                     b.ToTable("Location");
                 });

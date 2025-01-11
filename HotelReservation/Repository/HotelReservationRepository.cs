@@ -30,7 +30,7 @@ namespace HotelReservation.Repository
 
         public async Task DeleteAsync(int id)
         {
-            var hotel = await _context.Hotels.FirstOrDefaultAsync(h => h.Id == id);
+            var hotel = await _context.Hotels.FirstOrDefaultAsync(h => h.HotelId == id);
 
             if (hotel == null)
                 throw new InvalidOperationException($"Hotel with id: {id} wasn't found");
@@ -52,7 +52,7 @@ namespace HotelReservation.Repository
         {
             var hotel = await _context.Hotels
                 .Include(h => h.Location)
-                .FirstOrDefaultAsync(h => h.Id == id);
+                .FirstOrDefaultAsync(h => h.HotelId == id);
 
             return hotel;
         } 
@@ -61,10 +61,10 @@ namespace HotelReservation.Repository
         {
             var hotelToUpdate = await _context.Hotels
                 .Include(h => h.Location)
-                .FirstOrDefaultAsync(h => h.Id == hotel.Id);
+                .FirstOrDefaultAsync(h => h.HotelId == hotel.HotelId);
 
             if (hotelToUpdate == null)
-                throw new InvalidOperationException($"An error occurred while trying to update hotel with id: { hotel.Id }");
+                throw new InvalidOperationException($"An error occurred while trying to update hotel with id: { hotel.HotelId }");
 
             hotelToUpdate.Name = hotel.Name;
             hotelToUpdate.Location = hotel.Location;
