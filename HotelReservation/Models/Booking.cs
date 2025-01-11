@@ -5,11 +5,11 @@
         public int BookingId { get; set; }
         public int GuestId { get; set; }
         public int RoomId { get; set; }
-        public DateTime CheckIn { get; set; }
-        public DateTime CheckOut { get; set; }
-        public decimal TotalPrice { get; set; }
+        public DateTime CheckInDate { get; set; }
+        public DateTime CheckOutDate { get; set; }
+        public decimal TotalAmount { get; set; }
         public string BookingStatus { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime BookingDate { get; set; }
 
         // Navigation Properties
         public Guest Guest { get; set; }

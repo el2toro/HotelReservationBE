@@ -2,10 +2,6 @@
 using HotelReservation.Repository;
 using HotelReservation.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace HotelReservation.Controllers;
 
@@ -34,6 +30,13 @@ public class AuthController : Controller
             return Ok(new { token });
         }
 
+        return Unauthorized();
+    }
+
+    // TODO
+    [HttpPost("Register")]
+    public async Task<ActionResult> Register(UserDto user)
+    {
         return Unauthorized();
     }
 }

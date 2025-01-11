@@ -42,21 +42,5 @@ namespace HotelReservation.Controllers
             await _repository.CreateAsync(hotel);
             return Ok(HttpStatusCode.Created);
         }
-
-        //TODO: 
-        [HttpPost("Load")]
-        public async Task<ActionResult> LoadAsync(Hotel hotel)
-        {
-            await _repository.CreateAsync(hotel);
-            return Ok(HttpStatusCode.Accepted);
-        }
-
-        //TODO: 
-        [HttpPost("GetByRegion")]
-        public async Task<ActionResult> GetByRegionAsync(string destination)
-        {
-            //await _repository.CreateAsync(hotel);
-            return Ok(HttpStatusCode.Accepted);
-        }
     }
 }

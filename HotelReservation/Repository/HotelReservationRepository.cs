@@ -11,7 +11,6 @@ namespace HotelReservation.Repository
         Task UpdateAsync(Hotel hotel);
         Task CreateAsync(Hotel hotel);
         Task DeleteAsync(int id);
-        Task<IEnumerable<Hotel>> GetRegionsAsync(string destination);
     }
     public class HotelReservationRepository : IHotelReservationRepository
     {
@@ -70,11 +69,6 @@ namespace HotelReservation.Repository
             
             _context.Update(hotelToUpdate);
             await _context.SaveChangesAsync(); 
-        }
-
-        public Task<IEnumerable<Hotel>> GetRegionsAsync(string destination)
-        {
-            throw new NotImplementedException();
         }
     }
 }
