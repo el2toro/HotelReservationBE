@@ -1,4 +1,5 @@
-﻿using HotelReservation.Models;
+﻿using HotelReservation.DTOs;
+using HotelReservation.Models;
 using HotelReservation.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -16,14 +17,14 @@ namespace HotelReservation.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<ActionResult<IEnumerable<Hotel>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<HotelDto>>> GetAllAsync()
         {
             var result = await _repository.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("GetById")]
-        public async Task<ActionResult<Hotel>> GetByIdAsync(int hotelId)
+        public async Task<ActionResult<HotelDto>> GetByIdAsync(int hotelId)
         {
             var result = await _repository.GetByIdAsync(hotelId);
             return Ok(result);

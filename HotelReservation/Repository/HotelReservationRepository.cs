@@ -1,4 +1,5 @@
 ﻿using HotelReservation.Contexts;
+using HotelReservation.DTOs;
 using HotelReservation.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,8 +7,8 @@ namespace HotelReservation.Repository
 {
     public interface IHotelReservationRepository
     {
-        Task<IEnumerable<Hotel>> GetAllAsync();
-        Task<Hotel> GetByIdAsync(int id);
+        Task<IEnumerable<HotelDto>> GetAllAsync();
+        Task<HotelDto> GetByIdAsync(int id);
         Task UpdateAsync(Hotel hotel);
         Task CreateAsync(Hotel hotel);
         Task DeleteAsync(int id);
@@ -27,29 +28,64 @@ namespace HotelReservation.Repository
 
         public async Task DeleteAsync(int id)
         {
-            var hotel = await _context.Hotels.FirstOrDefaultAsync(h => h.HotelId == id);
+            var hotel = await _context.Hotels
+                .FirstOrDefaultAsync(h => h.HotelId == id) ?? throw new InvalidOperationException($"Hotel with id: {id} wasn't found");
 
-            if (hotel == null)
-                throw new InvalidOperationException($"Hotel with id: {id} wasn't found");
-
-             _context.Hotels.Remove(hotel);
+            _context.Hotels.Remove(hotel);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Hotel>> GetAllAsync()
+        public async Task<IEnumerable<HotelDto>> GetAllAsync()
         {
             var hotels = await _context.Hotels
                 .Include(h => h.Location)
-                .ToListAsync();
+                .Select(h => new HotelDto
+                {
+                    // TODO: add starting room price
+                    HotelId = h.HotelId,
+                    Name = h.Name,
+                    Description = h.Description,
+                    CreatedAt = h.CreatedAt,
+                    UpdatedAt = h.UpdatedAt,
+                    IsAvailable = h.IsAvailable,
+                    Rating = h.Rating,
+                    Location = new LocationDto
+                    {
+                        Address = h.Location.Address,
+                        City = h.Location.City,
+                        State = h.Location.State,
+                        PostalCode = h.Location.PostalCode,
+                        Country = h.Location.Country
+                    }
+                    
+                }).ToListAsync();
 
             return hotels;
         }
 
-        public async Task<Hotel> GetByIdAsync(int id)
+        public async Task<HotelDto> GetByIdAsync(int id)
         {
             var hotel = await _context.Hotels
                 .Include(h => h.Location)
-                .FirstOrDefaultAsync(h => h.HotelId == id);
+                .Select(h => new HotelDto
+                {
+                    // TODO: add starting room price
+                    HotelId = h.HotelId,
+                    Name = h.Name,
+                    Description = h.Description,
+                    CreatedAt = h.CreatedAt,
+                    UpdatedAt = h.UpdatedAt,
+                    IsAvailable = h.IsAvailable,
+                    Rating = h.Rating,
+                    Location = new LocationDto
+                    {
+                        Address = h.Location.Address,
+                        City = h.Location.City,
+                        State = h.Location.State,
+                        PostalCode = h.Location.PostalCode,
+                        Country = h.Location.Country
+                    }
+                }).FirstOrDefaultAsync(h => h.HotelId == id);
 
             return hotel;
         } 
@@ -58,10 +94,7 @@ namespace HotelReservation.Repository
         {
             var hotelToUpdate = await _context.Hotels
                 .Include(h => h.Location)
-                .FirstOrDefaultAsync(h => h.HotelId == hotel.HotelId);
-
-            if (hotelToUpdate == null)
-                throw new InvalidOperationException($"An error occurred while trying to update hotel with id: { hotel.HotelId }");
+                .FirstOrDefaultAsync(h => h.HotelId == hotel.HotelId) ?? throw new InvalidOperationException($"An error occurred while trying to update hotel with id: { hotel.HotelId }");
 
             hotelToUpdate.Name = hotel.Name;
             hotelToUpdate.Location = hotel.Location;
