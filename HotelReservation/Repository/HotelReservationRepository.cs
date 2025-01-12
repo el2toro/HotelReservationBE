@@ -12,6 +12,8 @@ namespace HotelReservation.Repository
         Task UpdateAsync(Hotel hotel);
         Task CreateAsync(Hotel hotel);
         Task DeleteAsync(int id);
+        Task<IEnumerable<RoomDto>> GetRooms(int hotelId);
+        Task<IEnumerable<AmenityDto>> GetAmenities(int hotelId);
     }
     public class HotelReservationRepository : IHotelReservationRepository
     {
@@ -102,6 +104,45 @@ namespace HotelReservation.Repository
             
             _context.Update(hotelToUpdate);
             await _context.SaveChangesAsync(); 
+        }
+
+        // TODO: Apply filters
+        public async Task<IEnumerable<RoomDto>> GetRooms(int hotelId) 
+        {
+            var rooms = await _context.Rooms
+                .Where(room => room.HotelId == hotelId)
+                .Select(room => new RoomDto
+                {
+                    HotelId = room.HotelId,
+                    Capacity = room.Capacity,
+                    IsAvailable = room.IsAvailable,
+                    PricePerNight = room.PricePerNight,
+                    RoomId = room.RoomId,
+                    RoomNumber = room.RoomNumber,
+                    RoomType = room.RoomType
+                }).ToListAsync();
+
+            return rooms;
+        }
+
+        // TODO: Apply filters
+        public async Task<IEnumerable<AmenityDto>> GetAmenities(int hotelId)
+        {
+            var amenities = await _context.HotelAmenities
+                .Where(amenity => amenity.HotelId == hotelId)
+                .Select(amenity => new AmenityDto
+                {
+                    Name = amenity.Amenity.Name,
+                    Description = amenity.Amenity.Description
+                }).ToListAsync();
+
+            return amenities;
+        }
+
+        // TODO: Apply filters
+        public async Task BookRoom()
+        {
+            var amenities = await _context.Bookings.AddAsync(new Booking());
         }
     }
 }
