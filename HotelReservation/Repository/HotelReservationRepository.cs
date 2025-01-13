@@ -22,9 +22,12 @@ namespace HotelReservation.Repository
     public class HotelReservationRepository : IHotelReservationRepository
     {
         private readonly HotelReservationContext _context;
-        public HotelReservationRepository(HotelReservationContext context)
+        private readonly ILogger<HotelReservationRepository> _logger;
+        public HotelReservationRepository(HotelReservationContext context, 
+            ILogger<HotelReservationRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
         public async Task CreateAsync(Hotel hotel)
         {
@@ -130,6 +133,7 @@ namespace HotelReservation.Repository
         }
 
         // TODO: Apply filters
+        // Apply date  filters?
         public async Task<IEnumerable<AmenityDto>> GetAmenities(int hotelId)
         {
             var amenities = await _context.HotelAmenities
@@ -167,12 +171,13 @@ namespace HotelReservation.Repository
             }
             catch (Exception ex)
             {
-                // TODO: Log error
+                _logger.LogError($"Something went wrong while trying to book a room with id: { bookingDto.RoomId }");
                 throw;
             }
         }
 
         // TODO: Apply filters
+        // Update calculation logic 
         public async Task<decimal> GetReservationPrice(int roomId)
         {
             var room = await _context.Rooms
