@@ -1,4 +1,5 @@
 ﻿using HotelReservation.DTOs;
+using HotelReservation.Extentions;
 using HotelReservation.Models;
 using HotelReservation.Repository;
 using Microsoft.AspNetCore.Mvc;
@@ -63,11 +64,29 @@ namespace HotelReservation.Controllers
         }
 
         //TODO
-        [HttpGet("BookRoom")]
-        public async Task<ActionResult> BookRoomAsync()
+
+        [HttpPost("BookRoom")]
+        public async Task<ActionResult> BookRoomAsync(BookingDto booking)
         {
-            //var amenities = await _repository.GetAmenities(hotelId);
+            await _repository.BookRoom(booking);
             return Ok();
+        }
+
+        //TODO
+        [HttpGet("GetReservationPrice")]
+        public async Task<ActionResult> GetReservationPriceAsync(int roomId)
+        {
+            var price = await _repository.GetReservationPrice(roomId);
+            return Ok(price);
+        }
+
+
+        //TODO
+        [HttpGet("CheckRoomAvailability")]
+        public async Task<ActionResult> CheckRoomAvailabilityAsync(int roomId, string checkInDate, string checkOutDate)
+        {
+            var isAvailable = await _repository.CheckRoomAvailability(roomId, checkInDate.ToDateTime(), checkOutDate.ToDateTime());
+            return Ok(isAvailable);
         }
     }
 }

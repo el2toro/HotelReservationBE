@@ -1,5 +1,6 @@
 ﻿using HotelReservation.Contexts;
 using HotelReservation.DTOs;
+using HotelReservation.Extentions;
 using HotelReservation.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,9 @@ namespace HotelReservation.Repository
         Task DeleteAsync(int id);
         Task<IEnumerable<RoomDto>> GetRooms(int hotelId);
         Task<IEnumerable<AmenityDto>> GetAmenities(int hotelId);
+        Task BookRoom(BookingDto bookingDto);
+        Task<decimal> GetReservationPrice(int roomId);
+        Task<bool> CheckRoomAvailability(int roomId, DateTime checkInDate, DateTime checkOutDate);
     }
     public class HotelReservationRepository : IHotelReservationRepository
     {
@@ -59,7 +63,7 @@ namespace HotelReservation.Repository
                         PostalCode = h.Location.PostalCode,
                         Country = h.Location.Country
                     }
-                    
+
                 }).ToListAsync();
 
             return hotels;
@@ -90,24 +94,24 @@ namespace HotelReservation.Repository
                 }).FirstOrDefaultAsync(h => h.HotelId == id);
 
             return hotel;
-        } 
+        }
 
         public async Task UpdateAsync(Hotel hotel)
         {
             var hotelToUpdate = await _context.Hotels
                 .Include(h => h.Location)
-                .FirstOrDefaultAsync(h => h.HotelId == hotel.HotelId) ?? throw new InvalidOperationException($"An error occurred while trying to update hotel with id: { hotel.HotelId }");
+                .FirstOrDefaultAsync(h => h.HotelId == hotel.HotelId) ?? throw new InvalidOperationException($"An error occurred while trying to update hotel with id: {hotel.HotelId}");
 
             hotelToUpdate.Name = hotel.Name;
             hotelToUpdate.Location = hotel.Location;
             hotelToUpdate.Description = hotel.Description;
-            
+
             _context.Update(hotelToUpdate);
-            await _context.SaveChangesAsync(); 
+            await _context.SaveChangesAsync();
         }
 
         // TODO: Apply filters
-        public async Task<IEnumerable<RoomDto>> GetRooms(int hotelId) 
+        public async Task<IEnumerable<RoomDto>> GetRooms(int hotelId)
         {
             var rooms = await _context.Rooms
                 .Where(room => room.HotelId == hotelId)
@@ -140,9 +144,61 @@ namespace HotelReservation.Repository
         }
 
         // TODO: Apply filters
-        public async Task BookRoom()
+        public async Task BookRoom(BookingDto bookingDto)
         {
-            var amenities = await _context.Bookings.AddAsync(new Booking());
+            var bookind = new Booking
+            {
+                GuestId = bookingDto.GuestId,
+                RoomId = bookingDto.RoomId,
+                BookingDate = DateTime.Now,
+                BookingStatus = bookingDto.BookingStatus,
+                CheckInDate = bookingDto.CheckInDate.ToDateTime(),
+                CheckOutDate = bookingDto.CheckOutDate.ToDateTime(),
+                TotalAmount = bookingDto.TotalAmount
+            };
+
+            try
+            {
+                // TODO: check room availability on those dates
+                // 2. update room availability after adding new booking
+                // 3. send an email/sms on successfull booking via RabbitMQ?
+                await _context.Bookings.AddAsync(bookind);
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                // TODO: Log error
+                throw;
+            }
+        }
+
+        // TODO: Apply filters
+        public async Task<decimal> GetReservationPrice(int roomId)
+        {
+            var room = await _context.Rooms
+                .SingleOrDefaultAsync(room => room.RoomId == roomId);
+
+            return room.PricePerNight * 2;
+        }
+
+        // TODO: Apply
+        // 2. DateOnly?
+        public async Task<bool> CheckRoomAvailability(int roomId, DateTime checkInDate, DateTime checkOutDate)
+        {
+            var booking = await _context.Bookings
+                .Where(booking => booking.RoomId == roomId && (booking.CheckInDate >= checkInDate && booking.CheckOutDate <= checkOutDate))
+                .FirstOrDefaultAsync();
+
+            if (booking != null)
+            {
+                var room = await _context.Rooms.SingleOrDefaultAsync(room => room.RoomId == roomId);
+                room.IsAvailable = false;
+                _context.SaveChanges();
+
+                return false;
+            }
+
+            return true;
         }
     }
 }
