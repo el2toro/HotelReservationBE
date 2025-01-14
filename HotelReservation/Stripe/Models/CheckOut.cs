@@ -1,6 +1,6 @@
 ﻿namespace HotelReservation.Stripe.Models
 {
-    public class CheckOutModel
+    public class Checkout
     {
         public string? ProductName { get; set; }
         public string? ProductDescription { get; set; }

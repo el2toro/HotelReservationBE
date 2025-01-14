@@ -92,52 +92,5 @@ namespace HotelReservation.Controllers
             var isAvailable = await _repository.CheckRoomAvailability(roomId, checkInDate.ToDateTime(), checkOutDate.ToDateTime());
             return Ok(isAvailable);
         }
-
-        //TODO
-        [HttpPost("CheckOut")]
-        public async Task<ActionResult> CheckOutAsync(CheckOutModel checkOutModel)
-        {
-            StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
-
-            var options = new SessionCreateOptions
-            {
-                PaymentMethodTypes = new List<string> { "card" },
-                LineItems = new List<SessionLineItemOptions>
-                 {
-                     new SessionLineItemOptions
-                     {
-                         PriceData = new SessionLineItemPriceDataOptions
-                         {
-                             Currency = checkOutModel.Currency,
-                             ProductData = new SessionLineItemPriceDataProductDataOptions
-                             {
-                                 Name = checkOutModel.ProductName,
-                                 Description = checkOutModel.ProductDescription,
-                             },
-                             UnitAmount = checkOutModel.Amount
-                         },
-                         Quantity = checkOutModel.Quantity,
-                     },
-                 },
-                Mode = "payment",
-                SuccessUrl = checkOutModel.SuccessUrl,
-                CancelUrl = checkOutModel.CancelUrl,
-            };
-
-
-
-            try
-            {
-                var service = new SessionService();
-                var session = service.Create(options);
-
-                return Ok(new { sessionId = session.Id });
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-        }
     }
 }
