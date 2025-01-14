@@ -19,16 +19,12 @@ namespace HotelReservation.Repository
         Task<decimal> GetReservationPrice(int roomId);
         Task<bool> CheckRoomAvailability(int roomId, DateTime checkInDate, DateTime checkOutDate);
     }
-    public class HotelReservationRepository : IHotelReservationRepository
+    public class HotelReservationRepository(HotelReservationContext context,
+        ILogger<HotelReservationRepository> logger) : IHotelReservationRepository
     {
-        private readonly HotelReservationContext _context;
-        private readonly ILogger<HotelReservationRepository> _logger;
-        public HotelReservationRepository(HotelReservationContext context, 
-            ILogger<HotelReservationRepository> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
+        private readonly HotelReservationContext _context = context;
+        private readonly ILogger<HotelReservationRepository> _logger = logger;
+
         public async Task CreateAsync(Hotel hotel)
         {
             _context.Hotels.Add(hotel);
@@ -171,7 +167,7 @@ namespace HotelReservation.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Something went wrong while trying to book a room with id: { bookingDto.RoomId }");
+                _logger.LogError($"Something went wrong while trying to book a room with id: {bookingDto.RoomId}");
                 throw;
             }
         }
