@@ -15,13 +15,15 @@ public class HotelReservationController(IHotelReservationRepository repository,
     IConfiguration configuration,
     IRabbitMQService rabbitMQService,
     IRabbitMQConsumer rabbitMQConsumer,
-    IEmailSendService emailSendService) : Controller
+    IEmailSendService emailSendService,
+    ITwilioService twilioService) : Controller
 {
     private readonly IHotelReservationRepository _repository = repository;
     private readonly IConfiguration _configuration = configuration;
     private readonly IRabbitMQService _rabbitMQService = rabbitMQService;
     private readonly IRabbitMQConsumer _rabbitMQConsumer = rabbitMQConsumer;
     private readonly IEmailSendService _emailSendService = emailSendService;
+    private readonly ITwilioService _twilioService = twilioService;
 
     [HttpPost("GetAll")]
     public async Task<ActionResult<IEnumerable<HotelDto>>> GetAllAsync([FromBody] HotelSearchDto searchDto)
@@ -125,5 +127,13 @@ public class HotelReservationController(IHotelReservationRepository repository,
     {
         _emailSendService.SendEmail("");
         return Ok();
+    }
+
+    //TODO
+    [HttpGet("SmsSend")]
+    public async Task<ActionResult> SmsSend(string toNumber, string message)
+    {
+        var response = await _twilioService.SmsSend(toNumber, message);
+        return Ok(response);
     }
 }

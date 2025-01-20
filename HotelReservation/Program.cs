@@ -26,6 +26,7 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRabbitMQService, RabbitMQService>();
 
+builder.Services.AddSingleton<ITwilioService, TwilioService>();
 builder.Services.AddSingleton<IEmailSendService, EmailSendService>();
 builder.Services.AddSingleton<IRabbitMQConsumer, RabbitMQConsumer>();
 

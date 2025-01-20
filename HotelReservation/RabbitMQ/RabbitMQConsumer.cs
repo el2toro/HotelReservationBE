@@ -9,13 +9,16 @@ public interface IRabbitMQConsumer
 {
     Task StartConsuming();
 }
-public class RabbitMQConsumer : IRabbitMQConsumer
+public class RabbitMQConsumer(IEmailSendService emailSendService,
+    ITwilioService twilioService,
+    IConfiguration configuration,
+    ILogger<RabbitMQConsumer> logger) : IRabbitMQConsumer
 {
-    private readonly IEmailSendService _emailSendService;
-    public RabbitMQConsumer(IEmailSendService emailSendService)
-    {
-        _emailSendService = emailSendService;
-    }
+    private readonly IEmailSendService _emailSendService = emailSendService;
+    private readonly ITwilioService _twilioService = twilioService;
+    private readonly IConfiguration _configuration = configuration;
+    private readonly ILogger<RabbitMQConsumer> _logger = logger;
+
     public async Task StartConsuming()
     {
         var factory = new ConnectionFactory() { HostName = "localhost" };
@@ -29,8 +32,6 @@ public class RabbitMQConsumer : IRabbitMQConsumer
             autoDelete: false,
             arguments: null);
 
-
-
         var consumer = new AsyncEventingBasicConsumer(channel);
 
         consumer.ReceivedAsync += (model, ea) =>
@@ -38,7 +39,10 @@ public class RabbitMQConsumer : IRabbitMQConsumer
             byte[] body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
 
+            string twilioToNumber = _configuration["Twilio:ToNumber"];
+
             _emailSendService.SendEmail(message);
+            _twilioService.SmsSend(twilioToNumber, message);
 
             return Task.CompletedTask;
         };
