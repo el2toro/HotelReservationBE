@@ -1,4 +1,5 @@
 using HotelReservation.Contexts;
+using HotelReservation.RabbitMQ;
 using HotelReservation.Repository;
 using HotelReservation.Services;
 using HotelReservation.Stripe;
@@ -23,6 +24,10 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IHotelReservationRepository, HotelReservationRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IRabbitMQService, RabbitMQService>();
+
+builder.Services.AddSingleton<IEmailSendService, EmailSendService>();
+builder.Services.AddSingleton<IRabbitMQConsumer, RabbitMQConsumer>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(builder =>
@@ -57,6 +62,9 @@ StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 var app = builder.Build();
 
+var rabbitMqConsumer = app.Services.GetService<IRabbitMQConsumer>();
+await Task.Run(() => rabbitMqConsumer.StartConsuming());
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -73,3 +81,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

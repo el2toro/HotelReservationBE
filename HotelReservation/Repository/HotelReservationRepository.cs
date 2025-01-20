@@ -8,7 +8,7 @@ namespace HotelReservation.Repository
 {
     public interface IHotelReservationRepository
     {
-        Task<IEnumerable<HotelDto>> GetAllAsync();
+        Task<IEnumerable<HotelDto>> GetAllAsync(HotelSearchDto searchDto);
         Task<HotelDto> GetByIdAsync(int id);
         Task UpdateAsync(Hotel hotel);
         Task CreateAsync(Hotel hotel);
@@ -18,6 +18,7 @@ namespace HotelReservation.Repository
         Task BookRoom(BookingDto bookingDto);
         Task<decimal> GetReservationPrice(int roomId);
         Task<bool> CheckRoomAvailability(int roomId, DateTime checkInDate, DateTime checkOutDate);
+        Task<IEnumerable<Location>> GetLocations();
     }
     public class HotelReservationRepository(HotelReservationContext context,
         ILogger<HotelReservationRepository> logger) : IHotelReservationRepository
@@ -40,13 +41,14 @@ namespace HotelReservation.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<HotelDto>> GetAllAsync()
+        public async Task<IEnumerable<HotelDto>> GetAllAsync(HotelSearchDto searchDto)
         {
             var hotels = await _context.Hotels
                 .Include(h => h.Location)
+                .Where(hotel => hotel.Location.City == searchDto.WhereToGo &&
+                  hotel.Rooms.Where(room => room.Capacity >= searchDto.Guests).Count() >= searchDto.Rooms)
                 .Select(h => new HotelDto
                 {
-                    // TODO: add starting room price
                     HotelId = h.HotelId,
                     Name = h.Name,
                     Description = h.Description,
@@ -74,7 +76,6 @@ namespace HotelReservation.Repository
                 .Include(h => h.Location)
                 .Select(h => new HotelDto
                 {
-                    // TODO: add starting room price
                     HotelId = h.HotelId,
                     Name = h.Name,
                     Description = h.Description,
@@ -109,7 +110,6 @@ namespace HotelReservation.Repository
             await _context.SaveChangesAsync();
         }
 
-        // TODO: Apply filters
         public async Task<IEnumerable<RoomDto>> GetRooms(int hotelId)
         {
             var rooms = await _context.Rooms
@@ -127,9 +127,6 @@ namespace HotelReservation.Repository
 
             return rooms;
         }
-
-        // TODO: Apply filters
-        // Apply date  filters?
         public async Task<IEnumerable<AmenityDto>> GetAmenities(int hotelId)
         {
             var amenities = await _context.HotelAmenities
@@ -143,7 +140,6 @@ namespace HotelReservation.Repository
             return amenities;
         }
 
-        // TODO: Apply filters
         public async Task BookRoom(BookingDto bookingDto)
         {
             var bookind = new Booking
@@ -159,11 +155,15 @@ namespace HotelReservation.Repository
 
             try
             {
-                // TODO: check room availability on those dates
-                // 2. update room availability after adding new booking
-                // 3. send an email/sms on successfull booking via RabbitMQ?
-                await _context.Bookings.AddAsync(bookind);
-                _context.SaveChanges();
+                var isRoomAvailable = await CheckRoomAvailability(bookingDto.RoomId, 
+                    bookingDto.CheckInDate.ToDateTime(), 
+                    bookingDto.CheckOutDate.ToDateTime());
+
+                if (isRoomAvailable)
+                {
+                    await _context.Bookings.AddAsync(bookind);
+                    _context.SaveChanges();
+                }   
             }
             catch (Exception ex)
             {
@@ -172,34 +172,28 @@ namespace HotelReservation.Repository
             }
         }
 
-        // TODO: Apply filters
-        // Update calculation logic 
         public async Task<decimal> GetReservationPrice(int roomId)
         {
             var room = await _context.Rooms
                 .SingleOrDefaultAsync(room => room.RoomId == roomId);
 
-            return room.PricePerNight * 2;
+            return room.PricePerNight;
         }
 
-        // TODO: Apply
-        // 2. DateOnly?
         public async Task<bool> CheckRoomAvailability(int roomId, DateTime checkInDate, DateTime checkOutDate)
         {
             var booking = await _context.Bookings
                 .Where(booking => booking.RoomId == roomId && (booking.CheckInDate >= checkInDate && booking.CheckOutDate <= checkOutDate))
                 .FirstOrDefaultAsync();
 
-            if (booking != null)
-            {
-                var room = await _context.Rooms.SingleOrDefaultAsync(room => room.RoomId == roomId);
-                room.IsAvailable = false;
-                _context.SaveChanges();
+            return booking != null;    
+        }
 
-                return false;
-            }
+        public async Task<IEnumerable<Location>> GetLocations()
+        {
+            var locations = await _context.Locations.ToListAsync();
 
-            return true;
+            return locations;
         }
     }
 }
